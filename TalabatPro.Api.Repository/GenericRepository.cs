@@ -1,0 +1,59 @@
+﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TalabatPro.Api.Core.Entities;
+using TalabatPro.Api.Core.Repository.Contract;
+using TalabatPro.Api.Core.Specifications;
+using TalabatPro.Api.Repository.Data;
+
+namespace TalabatPro.Api.Repository
+{
+    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
+    {
+        private readonly StoreContext _dbContext;
+
+        public GenericRepository(StoreContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+      
+
+        public async Task<IReadOnlyList<T>> GetAllAsync()
+        {
+            if(typeof(T)==typeof(Product))
+            
+                return(IReadOnlyList<T>) await _dbContext.Set<Product>()
+                    .Include(p=>p.Brand)
+                    .Include(p=>p.Category)
+                    .ToListAsync();
+            
+            return await _dbContext.Set<T>().ToListAsync();
+        }
+
+       
+
+        public async Task<T?> GetByIdAsync(int id)
+        {
+            //if (typeof(T) == typeof(Product))
+            //{
+            //    return await _dbContext.Set<Product>()
+            //        .Include("ProductBrand")
+            //        .Include("ProductCategory")
+            //        .FirstOrDefaultAsync(e => e.Id == id) as T;
+            //}
+            return await _dbContext.Set<T>().FindAsync(id);
+        }
+        public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec)
+        {
+            return await SpecificationEvaluator<T>.GetQuery(_dbContext.Set<T>(), spec).ToListAsync();
+        }
+
+        public async Task<T?> GetWithSpecAsync(ISpecification<T> spec)
+        {
+            return await SpecificationEvaluator<T>.GetQuery(_dbContext.Set<T>(), spec).FirstOrDefaultAsync();
+        }
+    }
+}
