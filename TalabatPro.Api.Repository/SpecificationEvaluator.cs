@@ -20,6 +20,8 @@ namespace TalabatPro.Api.Repository
                 query = query.OrderBy(spec.OrderBy);
             else if (spec.OrderByDescending != null)
                 query = query.OrderByDescending(spec.OrderByDescending);
+            if (spec.IsPaginationEnabled)
+                query = query.Skip(spec.Skip).Take(spec.Take);
 
             query = spec.Inculdes.Aggregate(query, (q1, q2) => q1.Include(q2));
 

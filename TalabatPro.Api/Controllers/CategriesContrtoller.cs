@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TalabatPro.Api.Core.Entities;
 using TalabatPro.Api.Core.Repository.Contract;
@@ -14,6 +15,7 @@ namespace TalabatPro.Api.Controllers
         {
            _categoryRepo = categoryRepo;
         }
+        [Authorize(Roles = "Customer")]
         [HttpGet]
         public async Task<ActionResult<IReadOnlyList<ProductCategory>>> GetCategories()
         {

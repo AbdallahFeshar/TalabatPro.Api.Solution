@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TalabatPro.Api.Core.Entities;
+using TalabatPro.Api.Core.Entities.OrderModule;
 
 namespace TalabatPro.Api.Repository.Data
 {
@@ -22,5 +23,8 @@ namespace TalabatPro.Api.Repository.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductBrand> Brands { get; set; }
         public DbSet<ProductCategory> Categories { get; set; }
+        //public DbSet<Order> Orders { get; set; }
+        //public DbSet<OrderItem> OrderItems { get; set; }
+        //public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
     }
 }

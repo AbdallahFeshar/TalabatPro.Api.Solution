@@ -24,14 +24,18 @@ namespace TalabatPro.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<Pagination<ProductToReturnDto>>>> GetProducts(string? sort,int? brandid,int? categoryid)
+        public async Task<ActionResult<IReadOnlyList<Pagination<ProductToReturnDto>>>> GetProducts([FromQuery]productSpecParams specParams)
         {
             //var products = await _productRepo.GetAllAsync();
             //return Ok(products);
-            var spec = new PoductWithBrandAndCategorySpecification(sort, brandid, categoryid);
+            var spec = new PoductWithBrandAndCategorySpecification(specParams);
             var products = await _productRepo.GetAllWithSpecAsync(spec);
-            var mappedProducts = _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
-            return Ok(mappedProducts);
+            var data = _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
+
+            var countSpec = new ProductWithPaginationCount(specParams);
+            var totalItems = await _productRepo.GetCountAsync(countSpec);
+            var countInPage = data.Count;
+            return Ok(new Pagination<ProductToReturnDto>(specParams.PageSize,specParams.PageIndex,totalItems,data,countInPage));
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
