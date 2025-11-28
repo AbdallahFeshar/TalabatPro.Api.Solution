@@ -11,5 +11,9 @@ namespace TalabatPro.Api.Core.Entities.IdentityModule
     {
         public string DisplayName { get; set; }
         public Adderss? Address { get; set; }
+        public List<RefreshToken> RefreshTokens { get; set; } = new();
+
+
+
     }
 }

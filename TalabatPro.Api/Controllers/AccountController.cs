@@ -25,25 +25,35 @@ namespace TalabatPro.Api.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult> Login(LoginDto dto)
         {
+           
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user is null)
                 return Unauthorized();
+         
             var result =await _signInManager.CheckPasswordSignInAsync(user,dto.Password,false);
             if (!result.Succeeded)
-                return Unauthorized();
+                return Unauthorized(); 
+          
+
+            var tokenResponse = await _tokenService.CreateTokenAsync(user, _userManager);
+
+
             return Ok(new UserDto()
             {
                 DisplayName = user.DisplayName,
                 Email = user.Email,
-                Token = await _tokenService.CreateTokenAsync(user,_userManager)
+                AccessToken = tokenResponse.AccessToken,
+                RefreshToken = tokenResponse.RefreshToken
             });
         }
+      
+        
         [HttpPost("Register")]
         public async Task<ActionResult> Register(RegisterDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user is not null)
-                 return BadRequest(new { message = "User with this email already exists." });
+                return BadRequest(new { message = "User with this email already exists." });
 
 
             var newUser = new AppUser()
@@ -56,16 +66,19 @@ namespace TalabatPro.Api.Controllers
             var result = await _userManager.CreateAsync(newUser, dto.Password);
             if (!result.Succeeded)
                 return BadRequest();
-
+            // Generate token
+            var tokenResponse = await _tokenService.CreateTokenAsync(user, _userManager);
+            
             return Ok(new UserDto()
             {
                 DisplayName = newUser.DisplayName,
                 Email = newUser.Email,
-                Token = await _tokenService.CreateTokenAsync(user, _userManager)
+                AccessToken = tokenResponse.AccessToken,
+                RefreshToken = tokenResponse.RefreshToken
             });
 
         }
-
+       
 
 
     }

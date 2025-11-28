@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using TalabatPro.Api.Core.Entities.IdentityModule;
@@ -21,7 +22,7 @@ namespace TalabatPro.Api.Service
         {
             _config = config;
         }
-        public async Task<string> CreateTokenAsync(AppUser user, UserManager<AppUser> userManager)
+        public async Task<TokenResponse> CreateTokenAsync(AppUser user, UserManager<AppUser> userManager)
         {
             var authClaims = new List<Claim>
             {
@@ -42,7 +43,29 @@ namespace TalabatPro.Api.Service
                  claims: authClaims,
                  signingCredentials: new SigningCredentials(authKey, SecurityAlgorithms.HmacSha256Signature)
                  );
-            return new JwtSecurityTokenHandler().WriteToken(token);
+
+            var refreshToken = GenerateRefreshToken();
+
+            user.RefreshTokens.Add(new RefreshToken
+            {
+                Token = refreshToken,
+                Created = DateTime.UtcNow,
+                Expires = DateTime.UtcNow.AddSeconds(10)
+
+            });
+
+            return new TokenResponse()
+            {
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
+                RefreshToken = GenerateRefreshToken()
+            };
+        }
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
     }
 }
